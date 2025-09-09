@@ -62,3 +62,11 @@ def Fibonacci_w (l):
             n0 = n - n0
         return word
 
+F_fibonacci= []
+l_sequences = 0
+for s in sequences:
+    l_sequences = max(l_sequences, len(s))
+
+for k in range(2,31):
+    F_fibonacci.append(F_one_word(k,Fibonacci_w(l_sequences)))
+print(F_fibonacci)
