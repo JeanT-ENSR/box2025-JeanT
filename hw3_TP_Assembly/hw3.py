@@ -53,8 +53,8 @@ print(nb_processed)
 
 #### Q4 ####
 print("\n\nQ4 :")
-k_min = 30
-k_max = 31
+k_min = 31
+k_max = 32
 t = 0
 t_max = 20
 
@@ -153,4 +153,148 @@ ax[0].legend()
 ax[1].legend()
 
 plt.show()
+
+
+### Unitigs ###
+def unitig_from(dgb, k, s):
+    unitig = s
+    if not (s in dgb):
+        return unitig
+    else:
+        # On avance dans le graph à partir de s
+        continu = True
+        nb = 1
+        while continu :
+            possibility = 0
+            a = (unitig[nb:(30+nb)] + "A") in dgb
+            c = (unitig[nb:(30+nb)] + "C") in dgb
+            g = (unitig[nb:(30+nb)] + "G") in dgb
+            t = (unitig[nb:(30+nb)] + "T") in dgb
+            if a :
+                possibility = possibility + 1
+            if c :
+                possibility = possibility + 1
+            if g :
+                possibility = possibility + 1
+            if t :
+                possibility = possibility + 1
+
+            if possibility == 1:
+                nb = nb + 1
+                if a :
+                    unitig = unitig + "A"
+                elif c :
+                    unitig = unitig + "C"
+                elif g :
+                    unitig = unitig + "G"
+                elif t :
+                    unitig = unitig + "T"
+            else:
+                continu = False
+
+        # On recule dans le graph à partir de s
+        continu = True
+        while continu :
+            possibility = 0
+            a = ("A" + unitig[0:30]) in dgb
+            c = ("C" + unitig[0:30]) in dgb
+            g = ("G" + unitig[0:30]) in dgb
+            t = ("T" + unitig[0:30]) in dgb
+            if a :
+                possibility = possibility + 1
+            if c :
+                possibility = possibility + 1
+            if g :
+                possibility = possibility + 1
+            if t :
+                possibility = possibility + 1
+
+            if possibility == 1:
+                if a :
+                    unitig = "A" + unitig
+                elif c :
+                    unitig = "C" + unitig
+                elif g :
+                    unitig = "G" + unitig
+                elif t :
+                    unitig = "T" + unitig
+            else:
+                continu = False
+
+        return unitig
+
+
+k = 31
+size_unitig = np.zeros((4,5))
+for t in range(1,5):
+    print("\nt = ", end='')
+    print(t)
+
+    print("ecoli_genome_150k.fa :")
+    unitig = unitig_from( (create_dgb("ecoli_genome_150k.fa",k,t)), k, 'CGCTCTGTGTGACAAGCCGGAAACCGCCCAG')
+    print("len( ", end='')
+    print(unitig, end='')
+    print(") = ", end='')
+    size_unitig[t-1][0] = len(unitig)
+    print(size_unitig[t-1][0])
+
+    print("\nreads/ecoli_sample_perfect_reads_forward.fasta :")
+    unitig = unitig_from((create_dgb("reads/ecoli_sample_perfect_reads_forward.fasta",k,t)), k, 'CGCTCTGTGTGACAAGCCGGAAACCGCCCAG')
+    print("len( ", end='')
+    print(unitig, end='')
+    print(") = ", end='')
+    size_unitig[t-1][1] = len(unitig)
+    print(size_unitig[t-1][1])
+
+    print("\nreads/ecoli_sample_perfect_reads.fasta :")
+    unitig = unitig_from((create_dgb("reads/ecoli_sample_perfect_reads.fasta",k,t)), k, 'CGCTCTGTGTGACAAGCCGGAAACCGCCCAG')
+    print("len( ", end='')
+    print(unitig, end='')
+    print(") = ", end='')
+    size_unitig[t-1][2] = len(unitig)
+    print(size_unitig[t-1][2])
+
+    print("\nreads/ecoli_sample_reads_01.fasta :")
+    unitig = unitig_from((create_dgb("reads/ecoli_sample_reads_01.fasta",k,t)), k, 'CGCTCTGTGTGACAAGCCGGAAACCGCCCAG')
+    print("len( ", end='')
+    print(unitig, end='')
+    print(") = ", end='')
+    size_unitig[t-1][3] = len(unitig)
+    print(size_unitig[t-1][3])
+
+    print("\nreads/ecoli_sample_reads.fasta :")
+    unitig = unitig_from((create_dgb("reads/ecoli_sample_reads.fasta",k,t)), k, 'CGCTCTGTGTGACAAGCCGGAAACCGCCCAG')
+    print("len( ", end='')
+    print(unitig, end='')
+    print(") = ", end='')
+    size_unitig[t-1][4] = len(unitig)
+    print(size_unitig[t-1][4])
+
+print("\nt = 1 :")
+print(size_unitig[0][0], end=' ')
+print(size_unitig[0][1], end=' ')
+print(size_unitig[0][2], end=' ')
+print(size_unitig[0][3], end=' ')
+print(size_unitig[0][4])
+
+print("\nt = 2 :")
+print(size_unitig[1][0], end=' ')
+print(size_unitig[1][1], end=' ')
+print(size_unitig[1][2], end=' ')
+print(size_unitig[1][3], end=' ')
+print(size_unitig[1][4])
+
+print("\nt = 3 :")
+print(size_unitig[2][0], end=' ')
+print(size_unitig[2][1], end=' ')
+print(size_unitig[2][2], end=' ')
+print(size_unitig[2][3], end=' ')
+print(size_unitig[2][4])
+
+print("\nt = 4 :")
+print(size_unitig[3][0], end=' ')
+print(size_unitig[3][1], end=' ')
+print(size_unitig[3][2], end=' ')
+print(size_unitig[3][3], end=' ')
+print(size_unitig[3][4])
 
