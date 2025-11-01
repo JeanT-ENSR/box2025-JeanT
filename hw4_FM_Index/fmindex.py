@@ -168,7 +168,7 @@ class FMindex:
                 if key == self.bwt[i]:
                     ranks[key][i] = ranks[key][i-1] + 1
                 else:
-                    ranks[key][i] = (ranks[key][i-1] + 1
+                    ranks[key][i] = ranks[key][i-1] + 1
         self.fm_ranks = ranks
 
     def __compute_next_smallest_letter(self):
