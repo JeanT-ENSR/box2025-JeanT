@@ -145,8 +145,8 @@ for t in range(t_max):
 ### Q5 : plot the frequency ###
 t = np.linspace(0, t_max-1, t_max)
 fig, ax = plt.subplots(1, 2)
-frequency1 = stored1/processed1
-frequency2 = stored2/processed2
+frequency1 = processed1/stored1
+frequency2 = processed2/stored2
 ax[0].bar(t, frequency1, label="c")
 ax[1].bar(t, frequency2, label="d")
 ax[0].legend()

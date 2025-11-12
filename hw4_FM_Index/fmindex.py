@@ -9,7 +9,7 @@
 # Code by ____
 
 from ks import simple_kark_sort
-
+import numpy as np
 
 
 # >>==========================================================================<<
@@ -27,6 +27,12 @@ class FMindex:
         self.fm_rank = None
         self.fm_ranks = None
         self.next_smallest_letter = None
+
+        self.__compute_sa(seq)
+        self.__compute_bwt_from_sa(seq)
+        self.__compute_fm_count()
+        self.__compute_fm_rank()
+        self.__compute_fm_ranks()
 
 
 
@@ -78,7 +84,7 @@ class FMindex:
 
         first_column = sorted(self.bwt, key=cmp_str)
         first_cols = []
-        l = length(self.btw)
+        l = length(self.bwt)
 
         # Initialisation de la première colonne de la matrice
         for i in range(l):
@@ -87,12 +93,12 @@ class FMindex:
         # Construction de la colonne suivante de la matrice à partir des colonnes précédentes
         for _ in range(1,l):
             for i in range(l):
-                first_col[i] = self.btw[i] + first_col[i]
+                first_col[i] = self.bwt[i] + first_col[i]
             first_col = sorted(first_col, key=cmp_str)
 
         # On recherche le mot qui se termine par '$'
         k = 0
-        while self.btw[k] != "$" :
+        while self.bwt[k] != "$" :
             k=k+1
         return first_cols[k]
 
@@ -150,7 +156,7 @@ class FMindex:
         for i in range(l):
             nb = 0
             for j in range(i):
-                if self.btw[i] == self.btw[j]:
+                if self.bwt[i] == self.bwt[j]:
                     nb = nb + 1
             rank.append(nb+1)
         self.fm_rank = rank
@@ -162,7 +168,7 @@ class FMindex:
         '''
         l = len(self.bwt)
         ranks = {"$":np.zeros(l), "A":np.zeros(l), "C":np.zeros(l), "G":np.zeros(l), "T":np.zeros(l)}
-        ranks[self.btw[0]][0] = 1
+        ranks[self.bwt[0]][0] = 1
         for i in range(1,l):
             for key in ranks:
                 if key == self.bwt[i]:
@@ -183,8 +189,7 @@ class FMindex:
 
 
 ## Test ##
-fmi = FMindex('ACAACG')
-# fmi.__compute_sa('ACAACG')
-# sa = fmi.sa('ACAACG')
-
+fmi = FMindex("ACAACG")
+sa = fmi.sa
+print(sa)
 
