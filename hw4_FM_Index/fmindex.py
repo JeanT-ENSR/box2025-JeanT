@@ -33,6 +33,7 @@ class FMindex:
         self.__compute_fm_count()
         self.__compute_fm_rank()
         self.__compute_fm_ranks()
+        self.__compute_next_smallest_letter()
 
 
 
@@ -82,9 +83,9 @@ class FMindex:
         NOTE : self.bwt must be initialized
         '''
 
-        first_column = sorted(self.bwt, key=cmp_str)
+        first_column = sorted(self.bwt)
         first_cols = []
-        l = length(self.bwt)
+        l = len(self.bwt)
 
         # Initialisation de la première colonne de la matrice
         for i in range(l):
@@ -93,8 +94,8 @@ class FMindex:
         # Construction de la colonne suivante de la matrice à partir des colonnes précédentes
         for _ in range(1,l):
             for i in range(l):
-                first_col[i] = self.bwt[i] + first_col[i]
-            first_col = sorted(first_col, key=cmp_str)
+                first_cols[i] = self.bwt[i] + first_cols[i]
+            first_cols = sorted(first_cols)
 
         # On recherche le mot qui se termine par '$'
         k = 0
@@ -167,29 +168,84 @@ class FMindex:
         NOTE : self.bwt must be initialized
         '''
         l = len(self.bwt)
-        ranks = {"$":np.zeros(l), "A":np.zeros(l), "C":np.zeros(l), "G":np.zeros(l), "T":np.zeros(l)}
-        ranks[self.bwt[0]][0] = 1
-        for i in range(1,l):
-            for key in ranks:
-                if key == self.bwt[i]:
-                    ranks[key][i] = ranks[key][i-1] + 1
-                else:
-                    ranks[key][i] = ranks[key][i-1] + 1
+        ranks = {}
+        for i in range(l):
+            nb = 0
+            rank = np.zeros(l)
+            if not(self.bwt[i] in ranks):
+                for j in range(l):
+                    if self.bwt[i] == self.bwt[j]:
+                        nb = nb + 1
+                    rank[j] = nb
+                ranks[self.bwt[i]] = np.copy(rank)
         self.fm_ranks = ranks
+                
 
     def __compute_next_smallest_letter(self):
         '''
-        JE NE ME RAPELLE PLUS CE QUE C'EST
+        Récupére la lettre la plus petite apres a dans la seq
         '''
-        letter = "A"
-        self.next_smallest_letter = letter
+        dict_letter = {}
+        for a in self.bwt :
+            if not(a in dict_letter):
+                letter = '~'
+                for b in self.bwt:
+                    if b < letter:
+                        if b > a :
+                            letter = b
+                if letter == '~':
+                    letter = a
+                dict_letter[a] = letter
+        self.next_smallest_letter = dict_letter
 
     # >>===[ Pattern matching functions ]=======================================
+    def LFMapping(self, index):
+        self.fm_count[self.bwt[index]] + self.fm_rank[index] - 1
+
+
+    def membership(self, p):
+        '''
+        Trouver si la string p appartient à notre string de départ dans les seq de départ
+        
+        '''
+        (imin,imax) = (self.fm_count[p[-1]],self.fm_count[self.next_smallest_letter[p[-1]]]-1)
+        print("imin = " + str(imin) + " imax = " + str(imax))
+        if imin > imax :
+            return False
+        for k in range(len(p)-1):
+            imin = self.fm_ranks[p[k]][imin-1] + self.fm_count[p[k]]
+            imax = self.fm_ranks[p[k]][imax] - 1 + self.fm_count[p[k]]
+            print("imin = " + str(imin) + " imax = " + str(imax))
+            if imin > imax :
+                return False
+            print("imin = " + str(imin) + " imax = " + str(imax))
+        return True
+            
+
 
 
 
 ## Test ##
-fmi = FMindex("ACAACG")
+fmi = FMindex("BANANA")
 sa = fmi.sa
-print(sa)
+bwt = fmi.bwt
+print("bwt = " + str(bwt))
+print("sa = " + str(sa))
+print("next_smallest_letter = " + str(fmi.next_smallest_letter))
+print("count = " + str(fmi.fm_count))
+print("rank = " + str(fmi.fm_rank))
+print("ranks = " + str(fmi.fm_ranks))
+
+assert(fmi.membership("B"))
+print("Succeed")
+assert(fmi.membership("A"))
+print("Succeed")
+assert(fmi.membership("BA"))
+print("Succeed")
+assert(not(fmi.membership("BB")))
+print("Succeed")
+assert(fmi.membership("BAN"))
+print("Succeed")
+assert(fmi.membership("ANA"))
+print("Succeed")
 
