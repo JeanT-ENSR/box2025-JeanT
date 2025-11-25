@@ -3,15 +3,14 @@
 from xopen import xopen
 from readfa import readfq
 import numpy as np
-import sys  
+import sys
+from collections import defaultdict
 
 new_limit = 4 * 40000 * 150
 sys.setrecursionlimit(new_limit)  
 
-##### Read Aligner NAIF #####
-
 reads = []
-ref = []
+refs = []
 
 with xopen("reads.fq.gz") as fq:
     for _,seqfq,_ in readfq(fq):
@@ -20,7 +19,9 @@ with xopen("reads.fq.gz") as fq:
 
 with xopen("ref.fa.gz") as fa:
     for _,seqfa,_ in readfq(fa):
-        ref.append(seqfa)
+        refs.append(seqfa)
+
+##### Read Aligner NAIF #####
 
 max_int = max([len(read) for read in reads]) + 1
 
@@ -84,3 +85,94 @@ print(a)
 print(buildEditOperation(a))
 
 ##### Read Aligner Seed-and-Extend #####
+
+k = 29
+kMers = defaultdict(list)
+nb_refs = len(refs)
+for j in range(nb_refs):
+    l = len(refs[j])
+    for i in range(l):
+        if i+k < l:
+            kMers[refs[j][i:i+k]].append((j,i))
+
+def change(c):
+    if c == 'A':
+        return 'T'
+    if c == 'T':
+        return 'A'
+    if c == 'C':
+        return 'G'
+    if c == 'G':
+        return 'C'
+    return c
+
+def reverseComplement(read):
+    s = list(read)
+    l = len(s)
+    for i in range(l):
+        s[i] = change(s[i])
+    return ''.join(list(reversed(s))) 
+
+read_test = "ATTTACCGTA"
+print(read_test)
+print(reverseComplement(read_test))
+
+def seed(read):
+    seed = []
+    l = len(read)
+    for i in range(l):
+        if i+k < l:
+            if not(not(kMers[read[i:i+k]])):
+                seed.append((kMers[read[i:i+k]],i,True)) # True = sens d'origine du read
+    reverseRead = reverseComplement(read)
+    for i in range(l):
+        if i+k < l:
+            if not(not(kMers[reverseRead[i:i+k]])):
+                seed.append((kMers[reverseRead[i:i+k]],i,False))  # False = reverse du read
+    return seed
+
+def extend(seed,read):
+    '''
+    Je le fais en 2 étapes :
+        - Je cherche le plus grand perfect match
+        - Je fais un approximativeMatch entre le read et une zone autour du perfect match dans la ref
+    '''
+    # On cherche le plus grand perfect match grace au seed
+    # Idée : Si deux kmer coté à coté sont dans le seed alors on a un grand kmer de taille k+1
+    newSeed = []
+    for position in seed:
+        (refIndexList, indexRead, direction) = position
+        for (numRef, refIndex) in refIndexList:
+            isIn = False
+            newSeed2 = []
+            for newPosition in newSeed:
+                (numRef2, refStart, refIndex2, indexRead2, direction2) = newPosition
+                if (direction == direction2) and (numRef == numRef2) and (refIndex2 + 1 == refIndex) and (indexRead2 + 1 == indexRead):
+                    newSeed2.append((numRef, refStart, refIndex, indexRead, direction))
+                    isIn = True
+                else:
+                    newSeed2.append(newPosition)
+            newSeed = newSeed2
+            if not(isIn):
+                newSeed.append((numRef, refIndex, refIndex, indexRead, direction))
+    
+    # Etape 2
+    for (numRef, refIndexStart, refIndex, readIndex, direction) in newSeed:
+        refIndexEnd = refIndex + k
+        readIndexEnd = readIndex + k
+        bigK = (refIndexEnd - refIndexStart)
+        readIndexStart = readIndexEnd - bigK
+        l = len(read)
+        lRef = len(refs[numRef])
+        refStart = max(refIndexStart - (2 * readIndexStart), 0)
+        refEnd = min(refIndexEnd + (2 * (l - readIndexEnd)),lRef)
+
+        if direction :
+            return approximateMatching(read,refs[numRef][refStart:refEnd])
+        else:
+            return approximateMatching(reverseComplement(read),refs[numRef][refStart:refEnd])
+        
+
+for read in reads:
+    t = extend(seed(read),read)
+    print(min(t[-1]))
