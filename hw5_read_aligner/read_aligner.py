@@ -8,7 +8,7 @@ import sys
 new_limit = 4 * 40000 * 150
 sys.setrecursionlimit(new_limit)  
 
-##### Read Aligner
+##### Read Aligner NAIF #####
 
 reads = []
 ref = []
@@ -43,22 +43,44 @@ def edDistRecursiveMemo(a, b, memo):
     memo[(len(a), len(b))] = ans
     return ans
 
+def findPath(iStart,memo):
+    path = []
+    i = iStart
+    j = len(memo) - 1
+    path.append((i,j))
+    while(j > 0):
+        if i > 0:
+            vMin = min(memo[j-1][i-1], memo[j][i-1], memo[j-1][i])
+            if memo[j-1][i-1] == vMin:
+                j = j-1
+                i = i-1
+                path.append((i,j))
+            elif memo[j][i-1] == vMin:
+                i = i-1
+                path.append((i,j))
+            else:
+                j = j-1
+                path.append((i,j))
+        else:
+            j = j-1
+            path.append((i,j))
+    return path
+
+
 def buildEditOperation(memo):
-    return "TODO"
-
-print(len(reads))
-print(len(ref))
-
-print(reads[0][:5])
-print(reads[1][:12])
-
-print(approximateMatching(reads[0][:5], reads[1][:12]))
-
+    l1 = len(memo)
+    l2 = len(memo[l1-1])
+    dMin = min(memo[l1-1])
+    paths = []
+    for i in range(l2):
+        if memo[l1-1][i] == dMin:
+            paths.append(findPath(i,memo))
+    return paths
+            
 p = "TACGTCAGT"
 t = "AACCCTATGTCATGCCTTGGA"
-print(approximateMatching(p,t))
+a = approximateMatching(p,t)
+print(a)
+print(buildEditOperation(a))
 
-match1 = approximateMatching(reads[0],ref[0])
-match2 = approximateMatching(reads[0],ref[1])
-print(min(match1[150]))
-print(min(match2[150]))
+##### Read Aligner Seed-and-Extend #####
