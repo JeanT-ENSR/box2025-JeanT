@@ -76,7 +76,28 @@ def buildEditOperation(memo):
     for i in range(l2):
         if memo[l1-1][i] == dMin:
             paths.append(findPath(i,memo))
-    return paths
+    
+    operations = []
+    for path in paths:
+        (j0,i0) = path[0]
+        operation = []
+        l = len(path)
+        for i in range(1,l):
+            (j,i) = path[i]
+            (di,dj) = (i0-i,j0-j)
+            if (di,dj) == (1,1):
+                if memo[i0][j0] == memo[i][j] :
+                    operation.append('=')
+                else:
+                    operation.append('X')
+            elif (di,dj) == (1,0):
+                operation.append('I')
+            else:
+                operation.append('D')
+            (j0,i0) = (j,i)
+        operations.append(operation)
+
+    return operations
             
 # p = "TACGTCAGT"
 # t = "AACCCTATGTCATGCCTTGGA"
@@ -140,7 +161,8 @@ def extend(seed,read):
         - Je fais un approximativeMatch entre le read et une zone autour du perfect match dans la ref
     '''
     if len(seed) == 0 :
-        return [[150]]
+        l = len(read)
+        return ['X' for _ in range(l)]
     # On cherche le plus grand perfect match grace au seed
     # Idée : Si deux kmer coté à coté sont dans le seed alors on a un grand kmer de taille k+1
     newSeed = []
@@ -172,11 +194,13 @@ def extend(seed,read):
         refEnd = min(refIndexEnd + (2 * (l - readIndexEnd)),lRef)
 
         if direction :
-            return approximateMatching(read,refs[numRef][refStart:refEnd])
+            memo = approximateMatching(read,refs[numRef][refStart:refEnd])
+            return buildEditOperation(memo)
         else:
-            return approximateMatching(reverseComplement(read),refs[numRef][refStart:refEnd])
+            memo = approximateMatching(reverseComplement(read),refs[numRef][refStart:refEnd])
+            return buildEditOperation(memo)
         
 
 for read in reads:
     t = extend(seed(read),read)
-    print(min(t[-1]))
+    print(t)
