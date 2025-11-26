@@ -78,11 +78,11 @@ def buildEditOperation(memo):
             paths.append(findPath(i,memo))
     return paths
             
-p = "TACGTCAGT"
-t = "AACCCTATGTCATGCCTTGGA"
-a = approximateMatching(p,t)
-print(a)
-print(buildEditOperation(a))
+# p = "TACGTCAGT"
+# t = "AACCCTATGTCATGCCTTGGA"
+# a = approximateMatching(p,t)
+# print(a)
+# print(buildEditOperation(a))
 
 ##### Read Aligner Seed-and-Extend #####
 
@@ -113,9 +113,9 @@ def reverseComplement(read):
         s[i] = change(s[i])
     return ''.join(list(reversed(s))) 
 
-read_test = "ATTTACCGTA"
-print(read_test)
-print(reverseComplement(read_test))
+# read_test = "ATTTACCGTA"
+# print(read_test)
+# print(reverseComplement(read_test))
 
 def seed(read):
     seed = []
@@ -133,10 +133,14 @@ def seed(read):
 
 def extend(seed,read):
     '''
+    Si seed est vide alors on passe et on donne d = len(read) et full deletion
+    Si seed n'est pas vide alors
     Je le fais en 2 étapes :
         - Je cherche le plus grand perfect match
         - Je fais un approximativeMatch entre le read et une zone autour du perfect match dans la ref
     '''
+    if len(seed) == 0 :
+        return [[150]]
     # On cherche le plus grand perfect match grace au seed
     # Idée : Si deux kmer coté à coté sont dans le seed alors on a un grand kmer de taille k+1
     newSeed = []
