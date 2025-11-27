@@ -11,15 +11,19 @@ sys.setrecursionlimit(new_limit)
 
 reads = []
 refs = []
+nameRef = []
+nameRead = {}
 
 with xopen("reads.fq.gz") as fq:
-    for _,seqfq,_ in readfq(fq):
+    for name,seqfq,_ in readfq(fq):
         reads.append(seqfq)
+        nameRead[seqfq] = name
 
 
 with xopen("ref.fa.gz") as fa:
-    for _,seqfa,_ in readfq(fa):
+    for name,seqfa,_ in readfq(fa):
         refs.append(seqfa)
+        nameRef.append(name)
 
 ##### Read Aligner NAIF #####
 
@@ -78,6 +82,7 @@ def buildEditOperation(memo):
             paths.append(findPath(i,memo))
     
     operations = []
+    pathsIndex = []
     for path in paths:
         (j0,i0) = path[0]
         operation = []
@@ -96,8 +101,9 @@ def buildEditOperation(memo):
                 operation.append('D')
             (j0,i0) = (j,i)
         operations.append(operation)
+        pathsIndex.append(path[-1][0])
 
-    return operations
+    return operations,pathsIndex
             
 # p = "TACGTCAGT"
 # t = "AACCCTATGTCATGCCTTGGA"
@@ -162,7 +168,7 @@ def extend(seed,read):
     '''
     if len(seed) == 0 :
         l = len(read)
-        return ['X' for _ in range(l)]
+        return ((['X' for _ in range(l)],-1),-1,-1,'+',-1)
     # On cherche le plus grand perfect match grace au seed
     # Idée : Si deux kmer coté à coté sont dans le seed alors on a un grand kmer de taille k+1
     newSeed = []
@@ -195,12 +201,24 @@ def extend(seed,read):
 
         if direction :
             memo = approximateMatching(read,refs[numRef][refStart:refEnd])
-            return buildEditOperation(memo)
+            return (buildEditOperation(memo),numRef,refStart,'+',(min(memo[-1])))
         else:
             memo = approximateMatching(reverseComplement(read),refs[numRef][refStart:refEnd])
-            return buildEditOperation(memo)
+            return (buildEditOperation(memo),numRef,refStart,'-',(min(memo[-1])))
         
 
-for read in reads:
-    t = extend(seed(read),read)
-    print(t)
+with open("mapper.tsv", "w", encoding="utf-8") as f:
+    for read in reads:
+        tmp,numRef,refStart,strand,score = extend(seed(read),read)
+        t,indexRefTmp = tmp
+        indexRef = []
+        for index in indexRef:
+            indexRef.append(index+refStart)
+        nameREF = ""
+        if numRef == -1 :
+            nameREF = "No Match"
+        else:
+            nameREF = nameRef[numRef]
+        f.write(nameRead[read] + '\t' + nameREF + '\t' + str(refStart) + '\t' + strand + '\t' + str(score) + '\t' + str(t) + "\n")
+
+print("Job Done ! ")
