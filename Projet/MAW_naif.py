@@ -2,6 +2,14 @@
 
 import numpy as np
 from collections import defaultdict
+from xopen import xopen
+from readfa import readfq
+
+##### Test file #####
+reads = {}
+with xopen("all_ebi_plasmids.fa.xz") as fq:
+    for name,seqfq,_ in readfq(fq):
+        reads[name] = seqfq
 
 ##### Utils #####
 
@@ -67,12 +75,12 @@ def allMinAbsentWord(read,kmax):
         compute all MAW using the idea of the paper : "Scientific_Report.pdf"
     '''
 
-    #Step 1
+    # Step 1
     kmers_array = []
     for k in range(kmax+1):
         kmers_array.append(canonicalKmers(read,k))
     
-    #Step 2
+    # Step 2
     MAW = defaultdict(set)
     for k in range(1,kmax+1):
         for w in kmers_array[(k-1)]:
@@ -84,3 +92,21 @@ def allMinAbsentWord(read,kmax):
                 if(absentWord_aux(s,kmers_array[k]) and not(absentWord_aux(s[1:], kmers_array[(k-1)]))):
                     MAW[k].add(s)
     return MAW
+
+##### test and output in a TSV #####
+kmax = 5
+aMAW_list = []
+sorted(reads.items(), key=lambda t: t[0])
+with open("mapper.tsv", "w", encoding="utf-8") as f:
+    for name in reads:
+        print(name)
+        aMAW = allMinAbsentWord(reads[name], kmax)
+        aMAW_list.append(aMAW)
+
+        # Write in a TSV
+        for k in aMAW:
+            str_list = " ; ".join(aMAW[k])
+            f.write(name + '\t' + str(k) + '\t' + str_list + "\n")
+
+print("Job Done ! ")
+
