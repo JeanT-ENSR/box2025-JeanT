@@ -119,7 +119,7 @@ nb_refs = len(refs)
 for j in range(nb_refs):
     l = len(refs[j])
     for i in range(l):
-        if i+k < l:
+        if i+k-1 < l:
             kMers[refs[j][i:i+k]].append((j,i))
 
 def change(c):
