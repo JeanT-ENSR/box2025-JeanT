@@ -97,7 +97,7 @@ def allMinAbsentWord(read,kmax):
 kmax = 5
 aMAW_list = []
 sorted(reads.items(), key=lambda t: t[0])
-with open("mapper.tsv", "w", encoding="utf-8") as f:
+with open("MAW.tsv", "w", encoding="utf-8") as f:
     for name in reads:
         print(name)
         aMAW = allMinAbsentWord(reads[name], kmax)
