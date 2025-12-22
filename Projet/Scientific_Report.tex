@@ -497,9 +497,9 @@ We generate candidates from every MAW with complexity $O(|MAW|\times |S|\times k
 	\centering
 	\begin{tabular}{|c|c|c|c|}
 		\hline
-		Value of $k_{max}$&3&4&\\
+		Value of $k_{max}$&3&4&5\\
 		\hline
-		Computation time (s)&609.9&1445.9&\\
+		Computation time (s)&609.9&1445.9&3384.7\\
 		\hline
 	\end{tabular}
 	\caption{Computation time of algorithm $\ref{pmawsmart}$}
@@ -520,15 +520,9 @@ We have managed to construct 5 different algorithms, 3 for the generation of min
 There are multiple things we would like to improve on:
 \begin{itemize}
 	\item Since we lacked time, we didn't get to do as much testing as we would have wanted, particulary for the $p$MAWs where we only tested the algorithms with one value of $p$ which was $0.5$.
-	\item It should be possible to optimize our algorithms, at least enough so that the "smart" algorithms are faster than the naive ones.
+	\item It should be possible to optimize our algorithms, at least enough so that the "smart" algorithms are faster than the naive ones. Right now, all of our algorithms, especially for $p$-absent words, are very slow.
 \end{itemize}
 \begin{thebibliography}{1}
-
-\bibitem{MAW}
-F. Crochemore, G. Fici, R. Mercaş, and S. Varricchio,
-\emph{On the size of the set of minimal absent words},
-BMC Bioinformatics, 2009.  
-Available at: \url{https://link.springer.com/article/10.1186/1471-2105-10-137}
 \bibitem{Charles2013}
 	N.Jeudy,radix-tree, 2024, GitHub, \url{https://github.com/Nicola-31/radix-tree#readme}
 \end{thebibliography}
