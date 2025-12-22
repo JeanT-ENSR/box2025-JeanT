@@ -4,12 +4,15 @@ import numpy as np
 from collections import defaultdict
 from xopen import xopen
 from readfa import readfq
+import time
 
 ##### Test file #####
 reads = {}
-with xopen("all_ebi_plasmids.fa.xz") as fq:
-    for name,seqfq,_ in readfq(fq):
-        reads[name] = seqfq
+def read_files():
+    global reads
+    with xopen("all_ebi_plasmids.fa.xz") as fq:
+        for name,seqfq,_ in readfq(fq):
+            reads[name] = seqfq
 
 ##### Utils #####
 
@@ -94,19 +97,26 @@ def allMinAbsentWord(read,kmax):
     return MAW
 
 ##### test and output in a TSV #####
-kmax = 5
-aMAW_list = []
-sorted(reads.items(), key=lambda t: t[0])
-with open("MAW.tsv", "w", encoding="utf-8") as f:
-    for name in reads:
-        print(name)
-        aMAW = allMinAbsentWord(reads[name], kmax)
-        aMAW_list.append(aMAW)
+def main(kmax,filename)
+    #Outputs to "filename.tsv" all the MAWs of length <= kmax
+    #Prints progress as well as time elated
+    start_time = time.time()
+    aMAW_list = []
+    sorted(reads.items(), key=lambda t: t[0])
+    with open(filename+".tsv", "w", encoding="utf-8") as f:
+        i=0
+        for name in reads:
+            i+=1
+            mid_time = time.time()
+            print(name+ " --> "+str(i)+" with time "+str(mid_time-start_time)+'\n')
+            aMAW = allMinAbsentWord(reads[name], kmax)
+            aMAW_list.append(aMAW)
 
-        # Write in a TSV
-        for k in aMAW:
-            str_list = " ; ".join(aMAW[k])
-            f.write(name + '\t' + str(k) + '\t' + str_list + "\n")
-
-print("Job Done ! ")
+            # Write in a TSV
+            for k in aMAW:
+                str_list = " ; ".join(aMAW[k])
+                f.write(name + '\t' + str(k) + '\t' + str_list + "\n")
+    stop_time = time.time()
+    print("Job Done ! ")
+    print(stop_time-start_time)
 
